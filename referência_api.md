@@ -8,6 +8,7 @@ Estas notas foram concebidas para fornecer as especificações precisas e os exe
 
 Bem-vindo ao seu guia de referência para a API do Zenodo. Estas notas estão interligadas para o guiar através do processo de automatização de submissões.
 
+
 **Índice de Notas:**
 
 1.  [Conceitos Fundamentais e Fluxo de Trabalho](#nota-1-conceitos-fundamentais-e-fluxo-de-trabalho)
@@ -17,9 +18,9 @@ Bem-vindo ao seu guia de referência para a API do Zenodo. Estas notas estão in
 5.  [Passo 3: Adicionar e Atualizar Metadados](#nota-5-passo-3-adicionar-e-atualizar-metadados)
 6.  [Passo 4: Publicar a Submissão](#nota-6-passo-4-publicar-a-submissao)
 7.  [Referência Rápida de Metadados Essenciais](#nota-7-referencia-rapida-de-metadados-essenciais)
+8.  [Estrutura e Boas Práticas do Projeto](#estrutura-e-boas-praticas-do-projeto)
 
 ---
-
 ### **Nota 1: Conceitos Fundamentais e Fluxo de Trabalho**
 
 O processo de submissão via API do Zenodo segue um fluxo de trabalho claro e transacional. O conceito central é o **"Deposition"**.

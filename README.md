@@ -1,122 +1,162 @@
-# Zenodo Automatic Upload Script
+# Zenodo Automatic Upload Client
 
-Este projeto contém um script Python (`zenodoapp.py`) para automatizar o processo de upload de arquivos para o Zenodo, facilitando a publicação e o arquivamento de seus dados e publicações.
+Este projeto evoluiu de um script Python monolítico (`zenodoapp.py`) para uma estrutura modular (`zenodo_client/`), proporcionando maior flexibilidade e manutenibilidade.
+
+## Project Evolution
+
+### Fase 1: Script Monolítico (zenodoapp.py)
+- Implementação inicial com todas as funcionalidades básicas
+- Interface CLI para uploads simples
+- Funcional até hoje como ferramenta de referência
+
+### Fase 2: Pacote Modular (zenodo_client/)
+- Estrutura projetada em `projeto_estrutura.md`
+- Componentes separados por responsabilidade:
+  - `core/`: Lógica central do cliente
+  - `api/`: Endpoints específicos da API Zenodo
+  - `config/`: Gerenciamento de configurações
+  - `auth/`: Autenticação e tokens
+- Permite integração em outros projetos Python
+
+### Relação entre Componentes
+```mermaid
+graph TD
+    A[zenodoapp.py] -->|Usa como exemplo| B[zenodo_client]
+    B --> C[core/client.py]
+    B --> D[api/deposition.py]
+    B --> E[api/files.py]
+    C --> F[config/settings.py]
+    C --> G[auth/token_manager.py]
+```
 
 ## Funcionalidades
 
-O script `zenodoapp.py` permite:
+### Via Script Monolítico (`zenodoapp.py`)
+*   Criar novos depósitos (rascunhos) no Zenodo
+*   Fazer upload de arquivos para um depósito
+*   Adicionar metadados (título, autores, descrição, tipo, etc.)
+*   Publicar depósitos para obter DOI permanente
+*   Mover arquivos processados para `uploaded_files/`
+*   Modos de operação: 
+    - Interativo (padrão)
+    - Linha de comando (CLI)
+    - Monitoramento básico de pasta (`--monitor`)
 
-*   Criar novos depósitos (rascunhos) no Zenodo.
-*   Fazer upload de arquivos para um depósito.
-*   Adicionar metadados (título, autores, descrição, tipo, etc.) a um depósito.
-*   Publicar um depósito para obter um DOI permanente.
-*   Mover arquivos processados com sucesso para uma pasta de arquivo local (`uploaded_files`).
-*   Suporta diferentes modos de operação: interativo, linha de comando (CLI) e monitoramento básico de pasta.
+### Via Pacote Modular (`zenodo_client/`)
+- Todas as funcionalidades do script monolítico
+- Implementação modular para reutilização
+- Base para extensões futuras (ex: filas de jobs)
+- Interface mais consistente para integrações
 
 ## Pré-requisitos
 
-*   Python 3.6+ instalado.
-*   Conta no Zenodo (ou Zenodo Sandbox para testes).
-*   Uma chave de API do Zenodo com os escopos `deposit:write` e `deposit:actions`. Veja a seção [Configuração da Chave de API](#configuração-da-chave-de-api-do-zenodo) para obter instruções.
+*   Python 3.6+ instalado
+*   Conta no Zenodo (ou Zenodo Sandbox para testes)
+*   Chave de API com escopos `deposit:write` e `deposit:actions`
+  - [Guia de configuração](referência_api.md)
 
 ## Configuração
 
-### Configuração da Chave de API do Zenodo
-
-Obtenha sua chave de API seguindo os passos descritos na documentação [referência_api.md](referência_api.md).
-
-O script espera encontrar sua chave de API na variável de ambiente `ZENODO_TOKEN`. Você pode configurá-la temporariamente no seu terminal:
+### Configuração da Chave de API
+Configure sua chave na variável de ambiente `ZENODO_TOKEN`:
 
 ```bash
+# Configuração temporária
 export ZENODO_TOKEN="SEU_TOKEN_DE_ACESSO_AQUI"
-```
 
-Ou configurá-la permanentemente (adicione ao seu arquivo shell de inicialização, como `~/.bashrc` ou `~/.zshrc`):
-
-```bash
+# Configuração permanente
 echo 'export ZENODO_TOKEN="SEU_TOKEN_DE_ACESSO_AQUI"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Substitua `"SEU_TOKEN_DE_ACESSO_AQUI"` pela sua chave real.
-
-### Instalação das Dependências
-
-Recomenda-se usar um ambiente virtual para isolar as dependências do projeto.
-
-1.  Navegue até o diretório do projeto:
-    ```bash
-    cd /media/peixoto/stuff/zenodo_automatic
-    ```
-2.  Crie um ambiente virtual (se ainda não tiver):
-    ```bash
-    python3 -m venv venv
-    ```
-3.  Ative o ambiente virtual:
-    ```bash
-    source venv/bin/activate
-    ```
-4.  Instale as dependências listadas em `requirements.txt`:
-    ```bash
-    pip install -r requirements.txt
-    ```
+### Instalação de Dependências
+```bash
+cd /media/peixoto/stuff/zenodo_automatic
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
 ## Uso
 
-O script pode ser executado em diferentes modos:
-
-### Modo Interativo (Padrão)
-
-Execute o script sem argumentos. Ele solicitará as informações do arquivo e metadados interativamente.
-
+### Via Script Monolítico
 ```bash
+# Modo interativo
 python zenodoapp.py
-```
 
-### Modo CLI (Argumentos de Linha de Comando)
-
-Forneça todos os detalhes como argumentos para um upload não interativo:
-
-```bash
+# Modo CLI
 python zenodoapp.py \
-  --file "/caminho/para/seu/arquivo.pdf" \
-  --title "Título da Minha Publicação" \
-  --desc "Descrição detalhada do conteúdo." \
-  --creator "Silva, João" \
-  --creator "Souza, Maria" \
-  --type "publication" # Veja zenodoapp.py para tipos válidos
-```
+  --file "caminho/arquivo.pdf" \
+  --title "Título" \
+  --desc "Descrição" \
+  --creator "Autor 1" \
+  --creator "Autor 2" \
+  --type "publication"
 
-Use `--creator` multiple times para adicionar vários autores.
-
-### Modo Monitoramento de Pasta (`--monitor`)
-
-Este modo processa arquivos `.pdf` encontrados na pasta `upload_queue/`. Ele espera que um arquivo `metadata.json` com os metadados correspondentes esteja presente na mesma pasta para cada PDF.
-
-```bash
+# Modo monitoramento
 python zenodoapp.py --monitor
 ```
 
-Os arquivos PDF e seus respectivos `metadata.json` são movidos para a pasta `uploaded_files/` após um upload bem-sucedido. Note que o monitoramento contínuo em tempo real não está totalmente implementado e requer desenvolvimento adicional (ex: uso da biblioteca `watchdog`).
+### Via Pacote Modular (Exemplo)
+```python
+from zenodo_client import ZenodoClient
 
-## Estrutura de Pastas do Projeto
+client = ZenodoClient()
+deposition = client.create_deposition(title="Meu Depósito")
+client.upload_file(deposition.id, "caminho/arquivo.pdf")
+client.publish_deposition(deposition.id)
+```
 
-*   `.env`: Arquivo (ignorada pelo git) para configurar variáveis de ambiente, como `ZENODO_TOKEN`.
-*   `.gitignore`: Lista de arquivos e pastas a serem ignorados pelo Git (inclui `venv/`, `uploaded_files/`, `.env`).
-*   `requirements.txt`: Lista as dependências Python do projeto (`requests`).
-*   `upload_queue/`: Pasta para colocar arquivos (`.pdf`) e seus `metadata.json` associados para processamento no modo monitoramento.
-*   `uploaded_files/`: Pasta para onde os arquivos e metadados processados com sucesso são movidos.
-*   `venv/`: Ambiente virtual Python (ignorada pelo git).
-*   `zenodoapp.py`: O script principal da aplicação.
-*   `referência_api.md`: Documentação detalhada sobre a obtenção da chave de API e o uso das funções do script.
+## Estrutura do Projeto
 
-## Desenvolvimento Futuro
+```
+zenodo_automatic/
+├── .env
+├── .gitignore
+├── README.md
+├── guia_interativo_integra_zenodo.html
+├── projeto_estrutura.md
+├── referência_api.md
+├── requirements.txt
+├── test_zenodo_api.py
+├── upload_queue/
+├── uploaded_files/
+│   └── exemplo.pdf
+├── venv/
+├── zenodo_client/       # Pacote modular
+│   ├── api/
+│   │   ├── deposition.py
+│   │   └── files.py
+│   ├── auth/
+│   │   └── __init__.py
+│   ├── config/
+│   │   └── settings.py
+│   ├── core/
+│   │   └── client.py
+│   └── ...             # Outros módulos
+├── zenodo_metadata_prompt.md
+└── zenodoapp.py         # Script monolítico original
+```
 
-*   Implementação completa do monitoramento contínuo de pasta com `watchdog`.
-*   Adicionar tratamento de erros mais robusto.
-*   Expandir as opções de metadados suportadas.
-*   Implementar a funcionalidade de versionamento de arquivos (upload de novas versões de registros existentes).
+## Roadmap
 
----
+### Melhorias no Script Monolítico
+- [ ] Implementar monitoramento contínuo com `watchdog`
+- [ ] Melhorar tratamento de erros
+- [ ] Expandir opções de metadados
+- [ ] Adicionar versionamento de registros
 
-Lembre-se de usar a Sandbox do Zenodo para testes: `https://sandbox.zenodo.org/`
+### Desenvolvimento do Pacote Modular
+- [x] Criação de depósitos (`api/deposition.py`)
+- [x] Atualização de metadados (`api/deposition.py`)
+- [x] Listagem de arquivos (`api/files.py`)
+- [ ] Upload de arquivos (`api/files.py`)
+- [ ] Cliente base com retry/backoff (`core/client.py`)
+- [ ] Gerenciamento de tokens (`auth/`)
+- [ ] Endpoints de metadados (`api/metadata.py`)
+- [ ] Testes unitários (`tests/`)
+- [ ] Exemplos de uso (`scripts/`)
+
+
+
+

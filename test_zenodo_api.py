@@ -17,7 +17,7 @@ def test_api_key_access():
 
     # Using sandbox URL for testing by default
     # Change to "https://zenodo.org/api/deposit/depositions" for production
-    api_url = "https://sandbox.zenodo.org/api/deposit/depositions"
+    api_url = "https://zenodo.org/api/deposit/depositions"
 
     headers = {
         "Authorization": f"Bearer {access_token}"
